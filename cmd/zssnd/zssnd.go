@@ -41,6 +41,7 @@ func main() {
 	status := &zssn.StatusHandler{Survivors: repo}
 	checkin := &zssn.CheckInHandler{Survivors: repo}
 	flag := &zssn.FlagHandler{Survivors: repo}
+	trade := &zssn.TradeHandler{Survivors: repo}
 
 	r := chi.NewMux()
 
@@ -58,6 +59,7 @@ func main() {
 			r.Get("/", status.ServeHTTP)
 			r.Post("/checkins", checkin.ServeHTTP)
 			r.Post("/flags", flag.ServeHTTP)
+			r.Post("/trades", trade.ServeHTTP)
 		})
 	})
 
