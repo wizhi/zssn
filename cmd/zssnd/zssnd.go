@@ -41,9 +41,11 @@ func main() {
 
 	ctx := context.Background()
 
+	var pg *pgxpool.Pool
 	var repo zssn.SurvivorRepository = &inmem.SurvivorRepository{}
 	if *connString != "" {
-		pg, err := pgxpool.New(ctx, *connString)
+		var err error
+		pg, err = pgxpool.New(ctx, *connString)
 		if err != nil {
 			log.Fatalf("invalid Postgres connection string: %v", err)
 		}
@@ -55,6 +57,8 @@ func main() {
 	checkin := &zssn.CheckInHandler{Survivors: repo}
 	flag := &zssn.FlagHandler{Survivors: repo}
 	trade := &zssn.TradeHandler{Survivors: repo}
+
+	infected := &zssn.InfectedHandler{Conn: pg}
 
 	r := chi.NewMux()
 
@@ -74,6 +78,10 @@ func main() {
 			r.Post("/flags", flag.ServeHTTP)
 			r.Post("/trades", trade.ServeHTTP)
 		})
+	})
+
+	r.Route("/reports", func(r chi.Router) {
+		r.Get("/infected", infected.ServeHTTP)
 	})
 
 	srv := &http.Server{
