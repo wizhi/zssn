@@ -60,6 +60,7 @@ func main() {
 
 	infected := &zssn.InfectedHandler{Conn: pg}
 	averageResources := &zssn.AverageResourcesHandler{Conn: pg}
+	lostResources := &zssn.LostResourcesHandler{Conn: pg}
 
 	r := chi.NewMux()
 
@@ -84,6 +85,7 @@ func main() {
 	r.Route("/reports", func(r chi.Router) {
 		r.Get("/infected", infected.ServeHTTP)
 		r.Get("/average-resources", averageResources.ServeHTTP)
+		r.Get("/lost-resources", lostResources.ServeHTTP)
 	})
 
 	srv := &http.Server{
