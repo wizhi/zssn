@@ -70,7 +70,9 @@ func main() {
 		middleware.AllowContentType("application/json"),
 	)
 
-	r.Get("/", health())
+	r.Get("/", health(
+		checkPostgres(pg),
+	))
 
 	r.Route("/survivors", func(r chi.Router) {
 		r.Post("/", registration.ServeHTTP)
@@ -99,8 +101,27 @@ func main() {
 	}
 }
 
-func health() http.HandlerFunc {
+func health(checks ...healthCheck) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "ok")
+		var errs []error
+		for _, c := range checks {
+			c(r.Context())
+		}
+		if err := errors.Join(errs...); err != nil {
+			fmt.Fprintln(w, err)
+		} else {
+			fmt.Fprintln(w, "ok")
+		}
+	}
+}
+
+type healthCheck func(context.Context) error
+
+func checkPostgres(pg *pgxpool.Pool) healthCheck {
+	return func(ctx context.Context) error {
+		if pg == nil {
+			return nil
+		}
+		return pg.Ping(ctx)
 	}
 }
