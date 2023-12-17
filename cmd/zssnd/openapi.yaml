@@ -1,0 +1,234 @@
+openapi: 3.0.0
+info:
+  title: Zombie Survival Social Network
+  description: A system to share resources between non-infected humans.
+  version: 0.1.0
+
+paths:
+  /survivors:
+    post:
+      operationId: registerSurvivor
+      summary: Register a new survivor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                age:
+                  type: integer
+                gender:
+                  type: string
+                location:
+                  type: object
+                  properties:
+                    latitude:
+                      type: number
+                    longitude:
+                      type: number
+                inventory:
+                  type: object
+                  additionalProperties:
+                    type: integer
+      responses:
+        '200':
+          description: Survivor registered
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  survivorId:
+                    type: string
+        '400':
+          description: Client error
+        '500':
+          description: Server error
+
+  /survivors/{survivorId}:
+    parameters:
+      - in: path
+        name: survivorId
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getSurvivorStatus
+      summary: Get current status of survivor
+      responses:
+        '200':
+          description: Survivor status found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  age:
+                    type: integer
+                  gender:
+                    type: string
+                  location:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                      longitude:
+                        type: number
+                  inventory:
+                    type: object
+                    additionalProperties:
+                      type: integer
+        '404':
+          description: Survivor not found
+        '500':
+          description: Server error
+        
+  /survivors/{survivorId}/checkins:
+    parameters:
+      - in: path
+        name: survivorId
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: checkinSurvivor
+      summary: Check-in the current location of a survivor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+      responses:
+        '204':
+          description: Current location updated
+        '400':
+          description: Client error
+        '404':
+          description: Survivor not found
+        '500':
+          description: Server error
+
+  /survivors/{survivorId}/flags:
+    parameters:
+      - in: path
+        name: survivorId
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: flagSurvivor
+      summary: Flag survivor as being infected
+      responses:
+        '204':
+          description: Current location updated
+        '404':
+          description: Survivor not found
+        '500':
+          description: Server error
+
+  /survivors/{survivorId}/trades:
+    parameters:
+      - in: path
+        name: survivorId
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: trade
+      summary: Check-in the current location of a survivor
+      parameters:
+        - in: header
+          name: X-Survivor
+          required: true
+          description: |
+            Identifier of survivor initiating the trade.
+            This is required to allow for a nicer/more forward compatible path, once/if an identification mechanism is implemented.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                offer:
+                  type: object
+                  additionalProperties:
+                    type: integer
+                want:
+                  type: object
+                  additionalProperties:
+                    type: integer
+      responses:
+        '204':
+          description: Trade completed
+        '400':
+          description: Client error
+        '404':
+          description: Survivor not found
+        '500':
+          description: Server error
+
+  /reports/infected:
+    get:
+      operationId: getInfectedReport
+      summary: Get a report of the current infection levels
+      responses:
+        '200':
+          description: Report generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  percentageInfected:
+                    type: integer
+                  percentageNotInfected:
+                    type: integer
+        '500':
+          description: Server error
+        
+  /reports/average-resources:
+    get:
+      operationId: getAverageResourcesReport
+      summary: Get a report of the average amount of resources among survivors
+      responses:
+        '200':
+          description: Report generated
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+        '500':
+          description: Server error
+        
+  /reports/lost-resources:
+    get:
+      operationId: getLostResourcesReport
+      summary: Get a report of the total worth of resources lost to infection
+      responses:
+        '200':
+          description: Report generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lost:
+                    type: integer
+        '500':
+          description: Server error
