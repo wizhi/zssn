@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -9,9 +10,11 @@ import (
 
 	"github.com/wizhi/zssn"
 	"github.com/wizhi/zssn/inmem"
+	"github.com/wizhi/zssn/postgres"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/peterbourgon/ff/v4"
 	"github.com/peterbourgon/ff/v4/ffhelp"
 )
@@ -20,7 +23,8 @@ func main() {
 	fs := ff.NewFlagSet("zssn")
 
 	var (
-		listen = fs.StringLong("listen", ":8080", "Address to serve requests on")
+		listen     = fs.StringLong("listen", ":8080", "Address to serve requests on")
+		connString = fs.StringLong("postgres.conn", "", "Postgres connection string")
 	)
 
 	err := ff.Parse(fs, os.Args[1:],
@@ -35,7 +39,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	ctx := context.Background()
+
 	var repo zssn.SurvivorRepository = &inmem.SurvivorRepository{}
+	if *connString != "" {
+		pg, err := pgxpool.New(ctx, *connString)
+		if err != nil {
+			log.Fatalf("invalid Postgres connection string: %v", err)
+		}
+		repo = &postgres.SurvivorRepository{Conn: pg}
+	}
 
 	registration := &zssn.RegistrationHandler{Survivors: repo}
 	status := &zssn.StatusHandler{Survivors: repo}
