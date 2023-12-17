@@ -40,6 +40,7 @@ func main() {
 	registration := &zssn.RegistrationHandler{Survivors: repo}
 	status := &zssn.StatusHandler{Survivors: repo}
 	checkin := &zssn.CheckInHandler{Survivors: repo}
+	flag := &zssn.FlagHandler{Survivors: repo}
 
 	r := chi.NewMux()
 
@@ -56,6 +57,7 @@ func main() {
 		r.Route("/{survivorID}", func(r chi.Router) {
 			r.Get("/", status.ServeHTTP)
 			r.Post("/checkins", checkin.ServeHTTP)
+			r.Post("/flags", flag.ServeHTTP)
 		})
 	})
 
