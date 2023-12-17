@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/wizhi/zssn"
+	"github.com/wizhi/zssn/inmem"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/peterbourgon/ff/v4"
@@ -32,6 +35,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	var repo zssn.SurvivorRepository = &inmem.SurvivorRepository{}
+
+	registration := &zssn.RegistrationHandler{Survivors: repo}
+
 	r := chi.NewMux()
 
 	r.Use(
@@ -41,6 +48,10 @@ func main() {
 	)
 
 	r.Get("/", health())
+
+	r.Route("/survivors", func(r chi.Router) {
+		r.Post("/", registration.ServeHTTP)
+	})
 
 	srv := &http.Server{
 		Addr:    *listen,
