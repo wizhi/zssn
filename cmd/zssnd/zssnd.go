@@ -38,6 +38,7 @@ func main() {
 	var repo zssn.SurvivorRepository = &inmem.SurvivorRepository{}
 
 	registration := &zssn.RegistrationHandler{Survivors: repo}
+	status := &zssn.StatusHandler{Survivors: repo}
 
 	r := chi.NewMux()
 
@@ -51,6 +52,9 @@ func main() {
 
 	r.Route("/survivors", func(r chi.Router) {
 		r.Post("/", registration.ServeHTTP)
+		r.Route("/{survivorID}", func(r chi.Router) {
+			r.Get("/", status.ServeHTTP)
+		})
 	})
 
 	srv := &http.Server{
