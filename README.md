@@ -60,4 +60,11 @@ For convenience, [hurl][hurl] files are provided for the different features - th
 
 For more information about the various endpoints, see the provided OpenAPI 3 specification at `cmd/zssnd/openapi.yaml`.
 
+## TODO
+
+* Fix casing in HTTP responses
+* Clean up `./cmd/zssnd/zssnd.go`
+* Add integration tests for `./postgres`
+* Add deployment to Google Cloud Run
+
 [hurl]: https://hurl.dev/
